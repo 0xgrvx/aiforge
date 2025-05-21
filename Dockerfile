@@ -1,29 +1,95 @@
-# Use an official Node.js runtime as the base image
-FROM node:20.15.1
+ARG BASE=node:20.18.0
+FROM ${BASE} AS base
 
-# Set the working directory in the container
 WORKDIR /app
 
-# Install pnpm
-RUN npm install -g pnpm@9.4.0
+# Install dependencies (this step is cached as long as the dependencies don't change)
+COPY package.json pnpm-lock.yaml ./
 
-# Copy package.json and pnpm-lock.yaml (if available)
-COPY package.json pnpm-lock.yaml* ./
+#RUN npm install -g corepack@latest
 
-# Install dependencies
-RUN pnpm install
+#RUN corepack enable pnpm && pnpm install
+RUN npm install -g pnpm && pnpm install
 
-# Copy the rest of the application code
+# Copy the rest of your app's source code
 COPY . .
 
-# Build the application
+# Expose the port the app runs on
+EXPOSE 5173
+
+# Production image
+FROM base AS aiforge-ai-production
+
+# Define environment variables with default values or let them be overridden
+ARG GROQ_API_KEY
+ARG HuggingFace_API_KEY
+ARG OPENAI_API_KEY
+ARG ANTHROPIC_API_KEY
+ARG OPEN_ROUTER_API_KEY
+ARG GOOGLE_GENERATIVE_AI_API_KEY
+ARG OLLAMA_API_BASE_URL
+ARG XAI_API_KEY
+ARG TOGETHER_API_KEY
+ARG TOGETHER_API_BASE_URL
+ARG AWS_BEDROCK_CONFIG
+ARG VITE_LOG_LEVEL=debug
+ARG DEFAULT_NUM_CTX
+
+ENV WRANGLER_SEND_METRICS=false \
+    GROQ_API_KEY=${GROQ_API_KEY} \
+    HuggingFace_KEY=${HuggingFace_API_KEY} \
+    OPENAI_API_KEY=${OPENAI_API_KEY} \
+    ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY} \
+    OPEN_ROUTER_API_KEY=${OPEN_ROUTER_API_KEY} \
+    GOOGLE_GENERATIVE_AI_API_KEY=${GOOGLE_GENERATIVE_AI_API_KEY} \
+    OLLAMA_API_BASE_URL=${OLLAMA_API_BASE_URL} \
+    XAI_API_KEY=${XAI_API_KEY} \
+    TOGETHER_API_KEY=${TOGETHER_API_KEY} \
+    TOGETHER_API_BASE_URL=${TOGETHER_API_BASE_URL} \
+    AWS_BEDROCK_CONFIG=${AWS_BEDROCK_CONFIG} \
+    VITE_LOG_LEVEL=${VITE_LOG_LEVEL} \
+    DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX}\
+    RUNNING_IN_DOCKER=true
+
+# Pre-configure wrangler to disable metrics
+RUN mkdir -p /root/.config/.wrangler && \
+    echo '{"enabled":false}' > /root/.config/.wrangler/metrics.json
+
 RUN pnpm run build
 
-# Make sure bindings.sh is executable
-RUN chmod +x bindings.sh
+CMD [ "pnpm", "run", "dockerstart"]
 
-# Expose the port the app runs on (adjust if you specified a different port)
-EXPOSE 3000
+# Development image
+FROM base AS aiforge-ai-development
 
-# Start the application
-CMD ["pnpm", "run", "start"]
+# Define the same environment variables for development
+ARG GROQ_API_KEY
+ARG HuggingFace 
+ARG OPENAI_API_KEY
+ARG ANTHROPIC_API_KEY
+ARG OPEN_ROUTER_API_KEY
+ARG GOOGLE_GENERATIVE_AI_API_KEY
+ARG OLLAMA_API_BASE_URL
+ARG XAI_API_KEY
+ARG TOGETHER_API_KEY
+ARG TOGETHER_API_BASE_URL
+ARG VITE_LOG_LEVEL=debug
+ARG DEFAULT_NUM_CTX
+
+ENV GROQ_API_KEY=${GROQ_API_KEY} \
+    HuggingFace_API_KEY=${HuggingFace_API_KEY} \
+    OPENAI_API_KEY=${OPENAI_API_KEY} \
+    ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY} \
+    OPEN_ROUTER_API_KEY=${OPEN_ROUTER_API_KEY} \
+    GOOGLE_GENERATIVE_AI_API_KEY=${GOOGLE_GENERATIVE_AI_API_KEY} \
+    OLLAMA_API_BASE_URL=${OLLAMA_API_BASE_URL} \
+    XAI_API_KEY=${XAI_API_KEY} \
+    TOGETHER_API_KEY=${TOGETHER_API_KEY} \
+    TOGETHER_API_BASE_URL=${TOGETHER_API_BASE_URL} \
+    AWS_BEDROCK_CONFIG=${AWS_BEDROCK_CONFIG} \
+    VITE_LOG_LEVEL=${VITE_LOG_LEVEL} \
+    DEFAULT_NUM_CTX=${DEFAULT_NUM_CTX}\
+    RUNNING_IN_DOCKER=true
+
+RUN mkdir -p ${WORKDIR}/run
+CMD pnpm run dev --host

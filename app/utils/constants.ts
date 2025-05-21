@@ -1,95 +1,132 @@
-import type { ModelInfo, OllamaApiResponse, OllamaModel } from './types';
+import { LLMManager } from '~/lib/modules/llm/manager';
+import type { Template } from '~/types/template';
 
 export const WORK_DIR_NAME = 'project';
 export const WORK_DIR = `/home/${WORK_DIR_NAME}`;
 export const MODIFICATIONS_TAG_NAME = 'aiforge_file_modifications';
 export const MODEL_REGEX = /^\[Model: (.*?)\]\n\n/;
-export const DEFAULT_MODEL = 'open-mistral-7b';
-export const DEFAULT_PROVIDER = 'Mistral';
+export const PROVIDER_REGEX = /\[Provider: (.*?)\]\n\n/;
+export const DEFAULT_MODEL = 'claude-3-5-sonnet-latest';
+export const PROMPT_COOKIE_KEY = 'cachedPrompt';
 
-const staticModels: ModelInfo[] = [
-  { name: 'claude-3-5-sonnet-20240620', label: 'Claude 3.5 Sonnet', provider: 'Anthropic' },
-  { name: 'gpt-4o', label: 'GPT-4o', provider: 'OpenAI' },
-  { name: 'anthropic/claude-3.5-sonnet', label: 'Anthropic: Claude 3.5 Sonnet (OpenRouter)', provider: 'OpenRouter' },
-  { name: 'anthropic/claude-3-haiku', label: 'Anthropic: Claude 3 Haiku (OpenRouter)', provider: 'OpenRouter' },
-  { name: 'deepseek/deepseek-coder', label: 'Deepseek-Coder V2 236B (OpenRouter)', provider: 'OpenRouter' },
-  { name: 'google/gemini-flash-1.5', label: 'Google Gemini Flash 1.5 (OpenRouter)', provider: 'OpenRouter' },
-  { name: 'google/gemini-pro-1.5', label: 'Google Gemini Pro 1.5 (OpenRouter)', provider: 'OpenRouter' },
-  { name: 'mistralai/mistral-nemo', label: 'OpenRouter Mistral Nemo (OpenRouter)', provider: 'OpenRouter' },
-  { name: 'qwen/qwen-110b-chat', label: 'OpenRouter Qwen 110b Chat (OpenRouter)', provider: 'OpenRouter' },
-  { name: 'cohere/command', label: 'Cohere Command (OpenRouter)', provider: 'OpenRouter' },
-  { name: 'gemini-1.5-flash-latest', label: 'Gemini 1.5 Flash', provider: 'Google' },
-  { name: 'gemini-1.5-pro-latest', label: 'Gemini 1.5 Pro', provider: 'Google'},
-  { name: 'llama-3.1-70b-versatile', label: 'Llama 3.1 70b (Groq)', provider: 'Groq' },
-  { name: 'llama-3.1-8b-instant', label: 'Llama 3.1 8b (Groq)', provider: 'Groq' },
-  { name: 'llama-3.2-11b-vision-preview', label: 'Llama 3.2 11b (Groq)', provider: 'Groq' },
-  { name: 'llama-3.2-3b-preview', label: 'Llama 3.2 3b (Groq)', provider: 'Groq' },
-  { name: 'llama-3.2-1b-preview', label: 'Llama 3.2 1b (Groq)', provider: 'Groq' },
-  { name: 'claude-3-opus-20240229', label: 'Claude 3 Opus', provider: 'Anthropic' },
-  { name: 'claude-3-sonnet-20240229', label: 'Claude 3 Sonnet', provider: 'Anthropic' },
-  { name: 'claude-3-haiku-20240307', label: 'Claude 3 Haiku', provider: 'Anthropic' },
-  { name: 'gpt-4o-mini', label: 'GPT-4o Mini', provider: 'OpenAI' },
-  { name: 'gpt-4-turbo', label: 'GPT-4 Turbo', provider: 'OpenAI' },
-  { name: 'gpt-4', label: 'GPT-4', provider: 'OpenAI' },
-  { name: 'gpt-3.5-turbo', label: 'GPT-3.5 Turbo', provider: 'OpenAI' },
-  { name: 'deepseek-coder', label: 'Deepseek-Coder', provider: 'Deepseek'},
-  { name: 'deepseek-chat', label: 'Deepseek-Chat', provider: 'Deepseek'},
-  { name: 'open-mistral-7b', label: 'Mistral 7B', provider: 'Mistral' },
-  { name: 'open-mixtral-8x7b', label: 'Mistral 8x7B', provider: 'Mistral' },
-  { name: 'open-mixtral-8x22b', label: 'Mistral 8x22B', provider: 'Mistral' },
-  { name: 'open-codestral-mamba', label: 'Codestral Mamba', provider: 'Mistral' },
-  { name: 'open-mistral-nemo', label: 'Mistral Nemo', provider: 'Mistral' },
-  { name: 'ministral-8b-latest', label: 'Mistral 8B', provider: 'Mistral' },
-  { name: 'mistral-small-latest', label: 'Mistral Small', provider: 'Mistral' },
-  { name: 'codestral-latest', label: 'Codestral', provider: 'Mistral' },
-  { name: 'mistral-large-latest', label: 'Mistral Large Latest', provider: 'Mistral' },
+const llmManager = LLMManager.getInstance(import.meta.env);
+
+export const PROVIDER_LIST = llmManager.getAllProviders();
+export const DEFAULT_PROVIDER = llmManager.getDefaultProvider();
+
+export const providerBaseUrlEnvKeys: Record<string, { baseUrlKey?: string; apiTokenKey?: string }> = {};
+PROVIDER_LIST.forEach((provider) => {
+  providerBaseUrlEnvKeys[provider.name] = {
+    baseUrlKey: provider.config.baseUrlKey,
+    apiTokenKey: provider.config.apiTokenKey,
+  };
+});
+
+// starter Templates
+
+export const STARTER_TEMPLATES: Template[] = [
+  {
+    name: 'Expo App',
+    label: 'Expo App',
+    description: 'Expo starter template for building cross-platform mobile apps',
+    githubRepo: 'gauravmandall/aiforge-expo-template',
+    tags: ['mobile', 'expo', 'mobile-app', 'android', 'iphone'],
+    icon: 'i-aiforge:expo',
+  },
+  {
+    name: 'Basic Astro',
+    label: 'Astro Basic',
+    description: 'Lightweight Astro starter template for building fast static websites',
+    githubRepo: 'gauravmandall/aiforge-astro-basic-template',
+    tags: ['astro', 'blog', 'performance'],
+    icon: 'i-aiforge:astro',
+  },
+  {
+    name: 'NextJS Shadcn',
+    label: 'Next.js with shadcn/ui',
+    description: 'Next.js starter fullstack template integrated with shadcn/ui components and styling system',
+    githubRepo: 'gauravmandall/aiforge-nextjs-shadcn-template',
+    tags: ['nextjs', 'react', 'typescript', 'shadcn', 'tailwind'],
+    icon: 'i-aiforge:nextjs',
+  },
+  {
+    name: 'Vite Shadcn',
+    label: 'Vite with shadcn/ui',
+    description: 'Vite starter fullstack template integrated with shadcn/ui components and styling system',
+    githubRepo: 'gauravmandall/vite-shadcn',
+    tags: ['vite', 'react', 'typescript', 'shadcn', 'tailwind'],
+    icon: 'i-aiforge:shadcn',
+  },
+  {
+    name: 'Qwik Typescript',
+    label: 'Qwik TypeScript',
+    description: 'Qwik framework starter with TypeScript for building resumable applications',
+    githubRepo: 'gauravmandall/aiforge-qwik-ts-template',
+    tags: ['qwik', 'typescript', 'performance', 'resumable'],
+    icon: 'i-aiforge:qwik',
+  },
+  {
+    name: 'Remix Typescript',
+    label: 'Remix TypeScript',
+    description: 'Remix framework starter with TypeScript for full-stack web applications',
+    githubRepo: 'gauravmandall/aiforge-remix-ts-template',
+    tags: ['remix', 'typescript', 'fullstack', 'react'],
+    icon: 'i-aiforge:remix',
+  },
+  {
+    name: 'Slidev',
+    label: 'Slidev Presentation',
+    description: 'Slidev starter template for creating developer-friendly presentations using Markdown',
+    githubRepo: 'gauravmandall/aiforge-slidev-template',
+    tags: ['slidev', 'presentation', 'markdown'],
+    icon: 'i-aiforge:slidev',
+  },
+  {
+    name: 'Sveltekit',
+    label: 'SvelteKit',
+    description: 'SvelteKit starter template for building fast, efficient web applications',
+    githubRepo: 'aiforge-sveltekit-template',
+    tags: ['svelte', 'sveltekit', 'typescript'],
+    icon: 'i-aiforge:svelte',
+  },
+  {
+    name: 'Vanilla Vite',
+    label: 'Vanilla + Vite',
+    description: 'Minimal Vite starter template for vanilla JavaScript projects',
+    githubRepo: 'gauravmandall/vanilla-vite-template',
+    tags: ['vite', 'vanilla-js', 'minimal'],
+    icon: 'i-aiforge:vite',
+  },
+  {
+    name: 'Vite React',
+    label: 'React + Vite + typescript',
+    description: 'React starter template powered by Vite for fast development experience',
+    githubRepo: 'gauravmandall/aiforge-vite-react-ts-template',
+    tags: ['react', 'vite', 'frontend', 'website', 'app'],
+    icon: 'i-aiforge:react',
+  },
+  {
+    name: 'Vite Typescript',
+    label: 'Vite + TypeScript',
+    description: 'Vite starter template with TypeScript configuration for type-safe development',
+    githubRepo: 'gauravmandall/aiforge-vite-ts-template',
+    tags: ['vite', 'typescript', 'minimal'],
+    icon: 'i-aiforge:typescript',
+  },
+  {
+    name: 'Vue',
+    label: 'Vue.js',
+    description: 'Vue.js starter template with modern tooling and best practices',
+    githubRepo: 'gauravmandall/aiforge-vue-template',
+    tags: ['vue', 'typescript', 'frontend'],
+    icon: 'i-aiforge:vue',
+  },
+  {
+    name: 'Angular',
+    label: 'Angular Starter',
+    description: 'A modern Angular starter template with TypeScript support and best practices configuration',
+    githubRepo: 'gauravmandall/aiforge-angular-template',
+    tags: ['angular', 'typescript', 'frontend', 'spa'],
+    icon: 'i-aiforge:angular',
+  },
 ];
-
-export let MODEL_LIST: ModelInfo[] = [...staticModels];
-
-async function getOllamaModels(): Promise<ModelInfo[]> {
-  try {
-    const base_url = import.meta.env.OLLAMA_API_BASE_URL || "http://localhost:11434";
-    const response = await fetch(`${base_url}/api/tags`);
-    const data = await response.json() as OllamaApiResponse;
-
-    return data.models.map((model: OllamaModel) => ({
-      name: model.name,
-      label: `${model.name} (${model.details.parameter_size})`,
-      provider: 'Ollama',
-    }));
-  } catch (e) {
-    return [];
-  }
-}
-
-async function getOpenAILikeModels(): Promise<ModelInfo[]> {
- try {
-   const base_url =import.meta.env.OPENAI_LIKE_API_BASE_URL || "";
-   if (!base_url) {
-      return [];
-   }
-   const api_key = import.meta.env.OPENAI_LIKE_API_KEY ?? "";
-   const response = await fetch(`${base_url}/models`, {
-     headers: {
-       Authorization: `Bearer ${api_key}`,
-     }
-   });
-    const res = await response.json() as any;
-    return res.data.map((model: any) => ({
-      name: model.id,
-      label: model.id,
-      provider: 'OpenAILike',
-    }));
- }catch (e) {
-   return []
- }
-
-}
-async function initializeModelList(): Promise<void> {
-  const ollamaModels = await getOllamaModels();
-  const openAiLikeModels = await getOpenAILikeModels();
-  MODEL_LIST = [...ollamaModels,...openAiLikeModels, ...staticModels];
-}
-initializeModelList().then();
-export { getOllamaModels, getOpenAILikeModels, initializeModelList };

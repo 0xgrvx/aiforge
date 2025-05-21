@@ -59,7 +59,11 @@ describe('StreamingMessageParser', () => {
         },
       ],
       [
-        ['Some text before <aiforgeArti', 'fact', ' title="Some title" id="artifact_1">foo</aiforgeArtifact> Some more text'],
+        [
+          'Some text before <aiforgeArti',
+          'fact',
+          ' title="Some title" id="artifact_1" type="bundled" >foo</aiforgeArtifact> Some more text',
+        ],
         {
           output: 'Some text before  Some more text',
           callbacks: { onArtifactOpen: 1, onArtifactClose: 1, onActionOpen: 0, onActionClose: 0 },

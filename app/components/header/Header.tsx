@@ -14,31 +14,30 @@ export function Header() {
 
   return (
     <header
-      className={classNames(
-        'flex items-center bg-aiforge-elements-background-depth-1 p-5 border-b h-[var(--header-height)]',
-        {
-          'border-transparent': !chat.started,
-          'border-aiforge-elements-borderColor': chat.started,
-        },
-      )}
+      className={classNames('flex items-center p-5 border-b h-[var(--header-height)]', {
+        'border-transparent': !chat.started,
+        'border-aiforge-elements-borderColor': chat.started,
+      })}
     >
       <div className="flex items-center gap-2 z-logo text-aiforge-elements-textPrimary cursor-pointer">
         <div className="i-ph:sidebar-simple-duotone text-xl" />
         <a href="/" className="text-2xl font-semibold text-accent flex items-center">
-          <TextLogo />
+        <TextLogo />
         </a>
       </div>
-      <span className="flex-1 px-4 truncate text-center text-aiforge-elements-textPrimary">
-        <ClientOnly>{() => <ChatDescription />}</ClientOnly>
-      </span>
-      {chat.started && (
-        <ClientOnly>
-          {() => (
-            <div className="mr-1">
-              <HeaderActionButtons />
-            </div>
-          )}
-        </ClientOnly>
+      {chat.started && ( // Display ChatDescription and HeaderActionButtons only when the chat has started.
+        <>
+          <span className="flex-1 px-4 truncate text-center text-aiforge-elements-textPrimary">
+            <ClientOnly>{() => <ChatDescription />}</ClientOnly>
+          </span>
+          <ClientOnly>
+            {() => (
+              <div className="mr-1">
+                <HeaderActionButtons />
+              </div>
+            )}
+          </ClientOnly>
+        </>
       )}
     </header>
   );
