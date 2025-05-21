@@ -22,7 +22,7 @@ export function Header() {
       <div className="flex items-center gap-2 z-logo text-aiforge-elements-textPrimary cursor-pointer">
         <div className="i-ph:sidebar-simple-duotone text-xl" />
         <a href="/" className="text-2xl font-semibold text-accent flex items-center">
-        <TextLogo />
+          <TextLogo />
         </a>
       </div>
       {chat.started && ( // Display ChatDescription and HeaderActionButtons only when the chat has started.

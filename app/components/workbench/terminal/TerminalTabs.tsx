@@ -116,7 +116,8 @@ export const TerminalTabs = memo(() => {
                         className={classNames(
                           'flex items-center text-sm cursor-pointer gap-1.5 px-3 py-2 h-full whitespace-nowrap rounded-full',
                           {
-                            'bg-aiforge-elements-terminals-buttonBackground text-aiforge-elements-textPrimary': isActive,
+                            'bg-aiforge-elements-terminals-buttonBackground text-aiforge-elements-textPrimary':
+                              isActive,
                             'bg-aiforge-elements-background-depth-2 text-aiforge-elements-textSecondary hover:bg-aiforge-elements-terminals-buttonBackground':
                               !isActive,
                           },

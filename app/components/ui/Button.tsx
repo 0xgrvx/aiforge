@@ -7,7 +7,8 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-aiforge-elements-background text-aiforge-elements-textPrimary hover:bg-aiforge-elements-background-depth-2',
+        default:
+          'bg-aiforge-elements-background text-aiforge-elements-textPrimary hover:bg-aiforge-elements-background-depth-2',
         destructive: 'bg-red-500 text-white hover:bg-red-600',
         outline:
           'border border-aiforge-elements-borderColor bg-transparent hover:bg-aiforge-elements-background-depth-2 hover:text-aiforge-elements-textPrimary text-aiforge-elements-textPrimary dark:border-aiforge-elements-borderColorActive',

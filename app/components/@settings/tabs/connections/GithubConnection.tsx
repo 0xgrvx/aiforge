@@ -822,14 +822,18 @@ export default function GitHubConnection() {
                               className="flex flex-col p-3 rounded-lg bg-aiforge-elements-background-depth-2 dark:bg-aiforge-elements-background-depth-2 border border-aiforge-elements-borderColor dark:border-aiforge-elements-borderColor"
                             >
                               <span className="text-xs text-aiforge-elements-textSecondary">{stat.label}</span>
-                              <span className="text-lg font-medium text-aiforge-elements-textPrimary">{stat.value}</span>
+                              <span className="text-lg font-medium text-aiforge-elements-textPrimary">
+                                {stat.value}
+                              </span>
                             </div>
                           ))}
                         </div>
                       </div>
 
                       <div>
-                        <h5 className="text-sm font-medium text-aiforge-elements-textPrimary mb-2">Contribution Stats</h5>
+                        <h5 className="text-sm font-medium text-aiforge-elements-textPrimary mb-2">
+                          Contribution Stats
+                        </h5>
                         <div className="grid grid-cols-3 gap-4">
                           {[
                             {
@@ -883,7 +887,9 @@ export default function GitHubConnection() {
                               className="flex flex-col p-3 rounded-lg bg-aiforge-elements-background-depth-2 dark:bg-aiforge-elements-background-depth-2 border border-aiforge-elements-borderColor dark:border-aiforge-elements-borderColor"
                             >
                               <span className="text-xs text-aiforge-elements-textSecondary">{stat.label}</span>
-                              <span className="text-lg font-medium text-aiforge-elements-textPrimary">{stat.value}</span>
+                              <span className="text-lg font-medium text-aiforge-elements-textPrimary">
+                                {stat.value}
+                              </span>
                             </div>
                           ))}
                         </div>
